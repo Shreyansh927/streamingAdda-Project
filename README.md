@@ -1,101 +1,186 @@
-# StreamAdda Studio — React + Node/Express MVP
+<div align="center">
 
-A full-stack local demo inspired by cloud video streaming dashboards. It includes a React dashboard, Express REST API, video uploads, a persisted local video library, FFmpeg RTMP streaming, looping, stop controls, and activity logs.
+# ⚡ StreamAdda Cloud Studio
 
-This is an educational MVP, not a production-ready public SaaS and not affiliated with StreamAdda.
+**An open-source, full-stack 24/7 multi-destination live-streaming engine built with React, Node.js, Express, and FFmpeg.**
 
-## Requirements
+Broadcast pre-recorded videos and sequential playlists to YouTube, Facebook, Twitch, Kick, and Instagram simultaneously without subscription fees or keeping heavy desktop apps like OBS running.
 
-- Node.js 20+ (includes npm)
-- FFmpeg installed and available in PATH
-- A valid RTMP/RTMPS destination you control, if you want to test live streaming
+[![React](https://img.shields.io/badge/React-19.1-blue?logo=react&logoColor=white)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-6.3-purple?logo=vite&logoColor=white)](https://vitejs.dev)
+[![Node.js](https://img.shields.io/badge/Node.js-22.x-green?logo=node.js&logoColor=white)](https://nodejs.org)
+[![Express](https://img.shields.io/badge/Express-5.x-black?logo=express&logoColor=white)](https://expressjs.com)
+[![FFmpeg](https://img.shields.io/badge/FFmpeg-Engine-red?logo=ffmpeg&logoColor=white)](https://ffmpeg.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Run on Windows
+[Features](#-key-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [Presets](#-supported-platforms) • [Roadmap](#-roadmap)
 
-1. Extract the ZIP.
-2. Open the extracted `streamadda_react_node_full` folder in VS Code.
-3. Open **Terminal → New Terminal**. Confirm the terminal path is the project root (the folder containing `package.json`).
-4. Install dependencies:
+</div>
 
-   ```bash
-   npm install
-   ```
+---
 
-5. Create your local environment file by copying `.env.example` to `.env`. On PowerShell:
+## 🌟 Key Features
 
-   ```powershell
-   Copy-Item .env.example .env
-   ```
+| Feature | Description |
+| :--- | :--- |
+| 📡 **Multi-Destination Simulcast** | Broadcast a single video encode to **YouTube, Facebook Live, Twitch, and Kick at the same time** using FFmpeg's `tee` muxer with zero extra CPU re-encoding overhead. |
+| 🎛️ **Multi-Slot Architecture** | Run multiple independent streams concurrently (Slot 1: Devotional stream, Slot 2: Lo-Fi beats, Slot 3: Gaming loop) with isolated process controls. |
+| ☵ **Continuous Playlists** | Chain multiple videos into ordered playlists that loop seamlessly 24/7 (`-f concat -safe 0 -stream_loop -1`). |
+| 🏷️ **Real-Time Logo & Watermarking** | Burn transparent PNG channel logos onto the live stream at runtime with selectable positions (*Top-Right, Top-Left, Bottom-Right, Bottom-Left*). |
+| 🌐 **Web Video Downloader** | Paste any direct `.mp4`, `.mov`, `.webm`, or `.mkv` link to download video assets directly to the server library without local uploading. |
+| 🔑 **Channel Preset Manager** | Pre-configure and save stream keys with labels (*"My YouTube Main"*, *"Gaming FB Page"*) for instant one-click destination toggling. |
+| 🎨 **Obsidian Dark & Clean Light Themes** | Tactile, minimalist studio UI with instant, persisted theme toggling between dark obsidian mode and slate light mode. |
+| ⚙️ **Quality Presets** | One-click resolution and bitrate optimization (*720p HD @ 2500k*, *1080p FHD @ 4500k*, *480p SD @ 1200k*). |
+| 🔒 **Fail-Safe & Privacy** | Isolated failure boundaries (`onfail=ignore` ensures if one platform drops, others keep broadcasting) + strict log redaction of private stream keys. |
 
-   The default ports are frontend `3005` and API `5000`.
+---
 
-6. Install FFmpeg if you haven't already. For Windows, one option is https://www.gyan.dev/ffmpeg/builds/. Ensure `ffmpeg.exe` is on PATH; reopen VS Code after changing PATH. Verify:
+## 🏗️ Architecture
 
-   ```bash
-   ffmpeg -version
-   ```
+```mermaid
+flowchart TD
+    subgraph Frontend["React 19 + Vite Dashboard"]
+        UI["Studio Dashboard (Port 3005)"]
+        Slots["Slot Switcher"]
+        Channels["Channel Manager"]
+        Library["Video & Playlist Library"]
+    end
 
-7. Start both frontend and backend in one terminal:
+    subgraph Backend["Node.js + Express 5 (Port 5000)"]
+        API["REST API (/api)"]
+        SlotMgr["Multi-Slot Process Manager"]
+        Downloader["Direct URL Downloader"]
+        Storage[("Local JSON DB & Media Storage")]
+    end
 
-   ```bash
-   npm run dev
-   ```
+    subgraph Engine["FFmpeg Streaming Core"]
+        Process1["Slot 1: FFmpeg (Concat + Watermark)"]
+        Process2["Slot 2: FFmpeg (Loop + Tee Muxer)"]
+    end
 
-8. Open **http://127.0.0.1:3005** in your normal browser. Keep the terminal running.
+    subgraph Destinations["Broadcast Targets (RTMP/RTMPS)"]
+        YT["YouTube Live"]
+        FB["Facebook Live"]
+        TW["Twitch"]
+        KC["Kick / Instagram"]
+    end
 
-## What to try
+    UI --> API
+    Slots --> SlotMgr
+    API --> SlotMgr
+    API --> Downloader
+    API --> Storage
+    SlotMgr --> Process1
+    SlotMgr --> Process2
+    Process1 --> Destinations
+    Process2 --> Destinations
+```
 
-1. Upload a small MP4 file.
-2. Confirm it appears in the video library.
-3. Enter the RTMP/RTMPS URL provided by a streaming destination you control.
-4. Choose whether to loop the video.
-5. Click Start streaming and check the destination's preview/status.
-6. Click Stop stream when done.
+---
 
-Uploading and browsing the library work without FFmpeg. Actual streaming requires FFmpeg and a valid RTMP destination.
+## 🚀 Quick Start
 
-## Production limitations / security
+### Prerequisites
+1. **Node.js 20+** installed ([Download Node.js](https://nodejs.org/))
+2. **FFmpeg** installed and accessible in your system `PATH` ([Download FFmpeg](https://www.gyan.dev/ffmpeg/builds/))
 
-- There is no authentication, authorization, multi-tenant isolation, payment, or rate limiting. Do not expose this app to the public internet.
-- Videos are stored locally in `server/uploads/`; metadata is stored in `server/data/videos.json`.
-- This MVP supports one stream at a time. It does not have a durable worker queue, automatic retry/restart, cloud storage, or billing.
-- RTMP destination/stream keys are never written to video metadata and are redacted from FFmpeg log lines, but the destination is passed as an FFmpeg process argument. A local administrator may be able to inspect process arguments. Use a disposable test key and rotate it after testing.
-- Confirm stream reception on the destination platform; a running FFmpeg process alone does not prove the platform accepted the stream.
-- Stream only content you own or are authorized to broadcast, and follow the platform's rules.
+### 1. Clone & Install
+```bash
+git clone https://github.com/Shreyansh927/streamingAdda-Project.git
+cd streamingAdda-Project
+npm install
+```
 
-## Troubleshooting
+### 2. Configure Environment
+Create your `.env` file from the example:
+```bash
+# On Windows PowerShell:
+Copy-Item .env.example .env
 
-- **`npm` or `node` not recognized:** install Node.js LTS and restart VS Code.
-- **Port 3005 in use:** close the other process using it or change `server.port` in `vite.config.js`.
-- **Port 5000 in use:** change `API_PORT` in `.env` and update the Vite proxy target in `vite.config.js` to match.
-- **Cannot reach API:** run `npm run dev` from the project root and check that both API and WEB processes start.
-- **FFmpeg not found:** run `ffmpeg -version`. If it fails, install FFmpeg or set `FFMPEG_PATH` in `.env` to the full path to `ffmpeg.exe`.
-- **RTMP rejected:** verify the complete RTMP URL, key, account live-stream settings, and network access.
+# On Linux / macOS:
+cp .env.example .env
+```
 
-## Structure
+### 3. Start Development Servers
+You can run both the frontend and backend in one command:
+```bash
+npm run dev
+```
+
+> **Windows Users**: You can also double-click [`start_dev_servers.bat`](start_dev_servers.bat) to launch everything instantly.
+
+- **Frontend Studio**: [http://127.0.0.1:3005](http://127.0.0.1:3005)
+- **Backend API**: [http://127.0.0.1:5000](http://127.0.0.1:5000)
+
+---
+
+## 📡 Supported Platforms
+
+StreamAdda includes built-in RTMP ingest presets for all major broadcasting destinations:
+
+| Platform | Ingest Server URL | Stream Key Location |
+| :--- | :--- | :--- |
+| **YouTube Live** | `rtmp://a.rtmp.youtube.com/live2` | YouTube Studio ➔ Create ➔ Go Live ➔ Stream Key |
+| **Facebook Live** | `rtmps://live-api-s.facebook.com:443/rtmp/` | Meta Business Suite / Live Producer ➔ Stream Setup |
+| **Twitch** | `rtmp://live.twitch.tv/app/` | Creator Dashboard ➔ Settings ➔ Stream |
+| **Kick** | `rtmps://fa723fc1b171.global-contribute.live-video.net/app/` | Creator Dashboard ➔ Settings ➔ Stream URL & Key |
+| **Instagram Live** | `rtmps://live-upload.instagram.com:443/rtmp/` | Instagram Live Producer ➔ Stream URL & Key |
+| **Custom RTMP** | Any standard `rtmp://` or `rtmps://` endpoint | Restream, OBS Ninja, CDN, or private RTMP servers |
+
+---
+
+## 📁 Project Structure
 
 ```text
-streamadda_react_node_full/
+streamingAdda-Project/
 ├── src/
-│   ├── App.jsx
-│   ├── main.jsx
-│   └── styles.css
+│   ├── App.jsx           # Main Minimalist Studio Component & State
+│   ├── main.jsx          # React 19 Entrypoint
+│   └── styles.css        # Obsidian Dark & Light Variable Design System
 ├── server/
-│   ├── index.js
-│   ├── data/videos.json
-│   └── uploads/
-├── index.html
-├── vite.config.js
-├── package.json
-├── .env.example
+│   ├── index.js          # Express 5 REST API, Multi-Slot Runner & FFmpeg Engine
+│   ├── data/             # Persisted metadata (videos, channels, playlists, slots)
+│   └── uploads/          # Video storage & transparent watermarks
+├── start_dev_servers.bat # One-click Windows dev runner
+├── vite.config.js        # Vite 6 Dev & Proxy Configuration
+├── package.json          # Root dependencies & scripts
 └── README.md
 ```
 
-## Suggested next steps toward production
+---
 
-1. Add user accounts, session security and authorization.
-2. Replace JSON metadata storage with PostgreSQL.
-3. Store video files in S3-compatible object storage and use signed URLs.
-4. Run FFmpeg in isolated background workers with a queue (Redis/BullMQ), resource limits, retries and recovery.
-5. Encrypt stream keys at rest and use a safer secret-delivery strategy.
-6. Add usage quotas, billing, audit trails, monitoring, cleanup and abuse prevention.
+## 🛠️ REST API Reference
+
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/api/status` | `GET` | Health, slot status, active streams, and recent logs |
+| `/api/videos` | `GET` / `POST` | List uploaded videos or upload a new media file |
+| `/api/videos/import-url`| `POST` | Download video directly from a web URL |
+| `/api/videos/:id` | `DELETE` | Remove a video from library |
+| `/api/channels` | `GET` / `POST` | Manage saved RTMP destinations |
+| `/api/playlists`| `GET` / `POST` | Manage sequential video loop playlists |
+| `/api/watermarks`| `GET` / `POST` | Upload and manage transparent brand logos |
+| `/api/slots` | `GET` / `POST` | List or create concurrent streaming slots |
+| `/api/slots/:id/start` | `POST` | Launch broadcast on a specific slot |
+| `/api/slots/:id/stop` | `POST` | Stop active broadcast on a specific slot |
+
+---
+
+## 🗺️ Roadmap
+
+- [x] Multi-Destination Simulcasting (YouTube + FB + Twitch at once)
+- [x] Multi-Slot Concurrent Streams
+- [x] Continuous Video Playlists
+- [x] Web Video URL Importer
+- [x] Dynamic Brand Logo & Watermark Overlays
+- [x] Dark & Light Mode Theme Switcher
+- [ ] Automated Scheduled Streaming (Cron/Timer auto start & stop)
+- [ ] Auto-Reconnect Guard for network dropouts
+- [ ] Cloud S3 Object Storage integration for video assets
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+Feel free to use, modify, and distribute it for personal and commercial projects.
