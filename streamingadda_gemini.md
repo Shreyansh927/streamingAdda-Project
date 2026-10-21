@@ -32,3 +32,4 @@
 - Start dev (both API + frontend): `npm run dev`
 - Client only: `npm run dev:client`
 - Backend only: `npm run dev:server`
+- GitHub Repo: [https://github.com/Shreyansh927/streamingAdda-Project.git](https://github.com/Shreyansh927/streamingAdda-Project.git) (Synced with latest commits)
