@@ -1,0 +1,16 @@
+services:
+  streamadda:
+    build: .
+    container_name: streamadda-studio
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./server/uploads:/app/server/uploads
+      - ./server/data:/app/server/data
+    environment:
+      - NODE_ENV=production
+      - API_PORT=5000
+      - HOST=0.0.0.0
+      - CLIENT_ORIGIN=*
+      - FFMPEG_PATH=ffmpeg

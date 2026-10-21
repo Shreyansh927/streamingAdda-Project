@@ -3,33 +3,47 @@
 ## Overview
 - **Repository**: [https://github.com/Shreyansh927/streamingAdda-Project.git](https://github.com/Shreyansh927/streamingAdda-Project.git)
 - **Directory**: `C:\Users\sanke\Streaming adda`
-- **Type**: Full-stack local MVP for 24/7 or on-demand video streaming inspired by cloud live-streaming dashboards (StreamAdda style).
+- **Type**: Full-stack 24/7 Cloud Video Streaming Studio (inspired by StreamAdda, GoLive India, and Live Karo).
 
 ## Tech Stack
-- **Frontend**: React 19, Vite 6, Native CSS
-- **Backend**: Node.js (v22.17.0), Express 5, Multer (file uploads), dotenv, cors
-- **Streaming Engine**: FFmpeg (v8.1.1 installed in system PATH)
-- **Storage**: Local filesystem (`server/uploads/` for video files, `server/data/videos.json` for metadata)
+- **Frontend**: React 19, Vite 6, Native CSS with Dynamic Obsidian Dark & Slate Light Design System
+- **Backend**: Node.js (v22.17.0), Express 5, Multer (file & logo uploads), dotenv, cors
+- **Streaming Core**: FFmpeg (v8.1.1 on Windows, Alpine FFmpeg in Docker)
+- **Containerization**: Dockerfile (Node.js 22 + FFmpeg) & `docker-compose.yml`
+- **Storage**: Local filesystem (`server/uploads/`, `server/uploads/watermarks/`, and JSON DBs in `server/data/`)
 
 ## Port Configuration
-- **Frontend**: `http://127.0.0.1:3005`
-- **Backend API**: `http://127.0.0.1:5000`
+- **Development**:
+  - Frontend: `http://127.0.0.1:3005`
+  - Backend API: `http://127.0.0.1:5000`
+- **Production (Cloud / Docker / PM2)**:
+  - Unified on port `5000` (`http://0.0.0.0:5000`), serving compiled React frontend and streaming API together.
 
-## Core Features Present
-- **Multi-Destination Simulcasting**: Broadcast to multiple RTMP destinations simultaneously using FFmpeg `tee` muxer with `onfail=ignore` fallback.
-- **Saved Channels Manager**: Pre-configured presets for YouTube, Facebook Live, Twitch, Kick, Instagram, and Custom RTMP.
-- **Sequential Playlists**: Chain multiple videos to stream sequentially in a continuous 24/7 loop using FFmpeg concat demuxer.
-- **Direct URL Video Downloader**: Import web videos directly from MP4/video URLs into the local library without downloading to PC.
-- **Real-Time Logo & Watermark Overlay**: Burn channel logos (PNG) into the live stream in real time with customizable positioning (top-right, top-left, bottom-right, bottom-left).
-- **Multi-Slot Concurrent Streaming**: Manage multiple independent streaming slots (Slot 1, Slot 2, Slot N) with independent child processes and controls.
-- **Stream Quality Presets**: Selectable 720p HD, 1080p Full HD, or 480p SD encoding bitrate presets.
-- **Continuous 24/7 Looping**: Uninterrupted playback looping via FFmpeg `-stream_loop -1`.
-- **Video Library & Preview**: Upload (MP4, MKV, MOV, WebM, M4V), deletion, and modal HTML5 video player preview.
-- **Minimalist Modern Studio UI**: Clean, responsive design with instantaneous **Dark & Light Mode** switching (persisted via localStorage), real-time slot switching, telemetry badges, and live log stream.
+## Implemented Features (Completed Session 1)
+1. **Multi-Destination Simulcasting**: Broadcast single video/playlist to YouTube, Facebook Live, Twitch, Kick, and Instagram simultaneously via FFmpeg `tee` muxer with fail-safe isolation (`[f=flv:onfail=ignore]`).
+2. **Channel Presets & Stream Key Manager**: Pre-configured RTMP server endpoints with quick platform selection and masked stream keys.
+3. **Multi-Slot Architecture**: Run multiple concurrent streams (Slot 1, Slot 2, Slot N) with independent child processes and controls.
+4. **Continuous Sequential Playlists**: Combine multiple videos to broadcast in order in an endless 24/7 loop using FFmpeg concat demuxer.
+5. **Real-Time Logo & Watermark Overlay**: Burn transparent PNG logos onto the live stream in real time with selectable positioning (top-right, top-left, bottom-right, bottom-left).
+6. **Direct Web Video Downloader**: Import video files directly from web URLs (`.mp4`, `.webm`, `.mov`, `.mkv`) into the server library without local uploading.
+7. **Obsidian Dark & Clean Light Themes**: Instant, persisted theme toggling between dark obsidian mode and slate light mode.
+8. **Stream Quality Presets**: 720p HD (2500k), 1080p Full HD (4500k), 480p SD (1200k).
+9. **One-Click Startup**: Windows `start_dev_servers.bat` batch file.
+10. **Attractive Documentation**: Comprehensive `README.md` with architecture diagram, badges, and platform presets.
+11. **Cloud & Container Ready**: Added production `Dockerfile` and `docker-compose.yml` for zero-card deployment on Hugging Face Spaces, Render, or any VPS.
+
+## Next Steps / Agenda for Tomorrow
+1. **Free Cloud Deployment (No Credit Card)**:
+   - Deploy to **Hugging Face Spaces (Docker)** (Free 2 vCPU + 16 GB RAM) or **Render.com** using the newly created `Dockerfile`.
+   - Or test zero-cost **Cloudflare Tunnel** for instant public access from your PC.
+2. **Automated Stream Scheduler**:
+   - Add scheduled start & stop times or recurring 24/7 time slots for streams.
+3. **Auto-Reconnect Guard**:
+   - Automatic retry and reconnect mechanism if YouTube / Facebook drops connection during 24/7 broadcasting.
 
 ## Setup & Execution Commands
 - Double-click or run: `start_dev_servers.bat`
 - Start dev (both API + frontend): `npm run dev`
 - Client only: `npm run dev:client`
 - Backend only: `npm run dev:server`
-- GitHub Repo: [https://github.com/Shreyansh927/streamingAdda-Project.git](https://github.com/Shreyansh927/streamingAdda-Project.git) (Synced with latest commits)
+- Docker: `docker compose up --build -d`
