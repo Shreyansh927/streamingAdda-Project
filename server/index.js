@@ -834,6 +834,18 @@ app.post("/api/streams/stop", (req, res) => {
   }
 });
 
+// Serve compiled React frontend in production if dist/ exists
+const DIST_DIR = path.join(__dirname, "../dist");
+if (fs.existsSync(DIST_DIR)) {
+  app.use(express.static(DIST_DIR));
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+      return next();
+    }
+    res.sendFile(path.join(DIST_DIR, "index.html"));
+  });
+}
+
 // Multer error handling
 app.use((err, _req, res, _next) => {
   if (err instanceof multer.MulterError) {
@@ -845,8 +857,9 @@ app.use((err, _req, res, _next) => {
   res.status(400).json({ error: err.message || "Request failed." });
 });
 
-app.listen(PORT, "127.0.0.1", () => {
-  console.log(`StreamAdda Studio API running at http://127.0.0.1:${PORT}`);
-  console.log(`React Client: ${CLIENT_ORIGIN}`);
+const HOST = process.env.HOST || "0.0.0.0";
+
+app.listen(PORT, HOST, () => {
+  console.log(`StreamAdda Studio running at http://${HOST}:${PORT}`);
   console.log(`FFmpeg: ${FFMPEG_PATH}`);
 });
