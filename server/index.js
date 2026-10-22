@@ -835,13 +835,20 @@ app.post("/api/streams/stop", (req, res) => {
 });
 
 // Serve compiled React frontend in production if dist/ exists
+// Serve compiled React frontend in production if dist/ exists
 const DIST_DIR = path.join(__dirname, "../dist");
+
 if (fs.existsSync(DIST_DIR)) {
   app.use(express.static(DIST_DIR));
-  app.get("*", (req, res, next) => {
-    if (req.path.startsWith("/api") || req.path.startsWith("/uploads")) {
+
+  app.get("/{*path}", (req, res, next) => {
+    if (
+      req.path.startsWith("/api") ||
+      req.path.startsWith("/uploads")
+    ) {
       return next();
     }
+
     res.sendFile(path.join(DIST_DIR, "index.html"));
   });
 }
