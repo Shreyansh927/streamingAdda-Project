@@ -8,7 +8,7 @@ WORKDIR /app
 
 # Install dependencies first for optimal caching
 COPY package*.json ./
-RUN npm install --omit=dev
+RUN npm install
 
 # Copy project files
 COPY . .
